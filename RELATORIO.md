@@ -10,8 +10,6 @@ No teste com o servidor com gargalo ([src/servergargalo.py](src/servergargalo.py
 
 Já no servidor multithread ([src/server.py](src/server.py)), cada conexão aceita é imediatamente delegada para uma **thread**. Isso faz o loop principal voltar rapidamente ao `accept()` e “drenar” o backlog muito mais rápido. Na prática, isso reduz a chance da fila encher e faz com que as conexões sejam aceitas quase imediatamente, mesmo que cada atendimento individual ainda tenha latência (o `sleep(5)` do processamento).
 
----
-
 ## Questão 2 — Custo de Recursos: Threads vs. Event Loop
 
 **Dado observado no `server.py`:** o log do servidor mostrou pico de **10 conexões simultâneas** (linha `[ATIVO] Conexões simultâneas: 10`). Como o código imprime `threading.active_count() - 1`, isso corresponde a **10 threads de trabalho** (uma por cliente) além da thread principal do processo.
@@ -27,3 +25,11 @@ Já no servidor multithread ([src/server.py](src/server.py)), cada conexão acei
 - **CPU:** o controle de concorrência ocorre cooperativamente com `await` no Event Loop, reduzindo a necessidade de context switch entre várias threads do SO.
 
 **Síntese baseada no experimento:** no `server.py`, para suportar 10 conexões simultâneas foi necessário escalar até 10 threads de atendimento (além da thread principal). No servidor assíncrono, a mesma quantidade de clientes pode ser atendida com 1 thread e várias corrotinas, reduzindo o overhead de threads e trocas de contexto.
+
+## Desafio Extra — 200 conexões simultâneas
+
+**Resultado observado:** `SUCESSO=200`, `TIMEOUT=0`, `RECUSADO=0`, `ERRO=0`.
+
+Evidência:
+
+![desafioextra](prints/desafioextra.png)
